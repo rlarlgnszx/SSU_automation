@@ -45,13 +45,7 @@ class todo_class:
         self.main_class_name =main_class_name
         self.class_page= page
         self.is_fail=False
-        # '3월 8일 오후 11:59'
-        # print(self.rest_time)
-        # if '오후' in self.rest_time:
-        #     self.rest_time = dt.datetime.strptime(self.rest_time, "%m월 %d일 오후 %H:%M")
-        #     self.rest_time.replace(hour=self.rest_time.hour+12)
-        # elif '오전' in self.rest_time:
-        #     self.rest_time = dt.datetime.strptime(self.rest_time, "%m월 %d일 오전 %H:%M")
+
         if self.rest_time=='':
             self.rest_time = dt.datetime.strptime("12월 31일 오후 11:59", "%m월 %d일 오후 %H:%M")
             self.rest_time.replace(year=2024)

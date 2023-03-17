@@ -1,8 +1,25 @@
 # SSU_automation
-<h1>과연 backgroun재생으로 동영상 자동시청이 완성될 것인가</h1>
-<h3>request 와 selenium 이용 동영상 자동 연속재생 프로그램 만들기</h3>
-<h3>아직 동영상 강의 남아있는게 없어서 확인불가능...2학기 되면 후에 동영상 확인도 해보쟈</h3>
+<h1>SSU AUTOMATION APPLICATION</h1>
+<h3>using : Playwright</h3>
+<h3>using : chromnium</h3>
 
-<h3>server 만들어서 자동재생으로 들은 동영상 기록 남긴후 후에 들을 수있게 만들기</h3>
+<h1>Login</h1>
+<image src=https://user-images.githubusercontent.com/40743105/225222917-274d839c-bb57-4685-9e4b-b1bd12a1b4bb.png >
+<h3>LMS 개편후 login후 가져오는 데이터 속도가 느려짐..주의..</h3>
+<h1>Login 후</h1>
+<image src=https://user-images.githubusercontent.com/40743105/225223324-317df9bf-5fb7-4130-8e80-d7ee5680a541.png>
 
-#성공
+<h2>STREAM</h2>
+<image src=https://user-images.githubusercontent.com/40743105/225223623-af9fcc29-de53-4e4c-920f-a8a4799180ba.png>
+
+<h2>DOWNLOAD</h2>
+FILE PATH 경로
+강의 이름:
+    ->files
+    ->pdfs
+    ->assignments
+
+```
+    pip install pytest-playwright
+    playwright install chromium
+```
