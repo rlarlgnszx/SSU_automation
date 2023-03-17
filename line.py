@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-@dataclass(frozen=True)
 class Local:
     def __init__(self):
         self.TAG_SELECTOR = """

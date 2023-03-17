@@ -4,11 +4,10 @@ import os
 import learn_x2
 import complex_example
 customtkinter.set_appearance_mode("dark")
-from class_save import todo_class
 from multiprocessing import Queue
 import os
 from dotenv import load_dotenv,find_dotenv ,set_key
-#wpwns0318!
+
 class LoginErrorWindow(customtkinter.CTkToplevel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -27,7 +26,6 @@ class App(customtkinter.CTk):
         self.resizable(False, False)
         self.dotenv_file = find_dotenv()
         load_dotenv(self.dotenv_file)
-        
         current_path = os.path.dirname(os.path.realpath(__file__))
         self.bg_image = customtkinter.CTkImage(Image.open(current_path + "/test_images/bg_gradient.jpg"),
                                                size=(self.width, self.height))
