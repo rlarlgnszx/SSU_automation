@@ -13,7 +13,7 @@ import zipfile
 import threading
 from datetime import datetime
 from urllib.parse import urlsplit, parse_qsl
-
+from line import Local
 
 # import ssuUI
 #=====================================================
@@ -21,59 +21,49 @@ from ssu import SSU
 from class_save import main_class,todo_class
 # from bs4 import BeautifulSoup as bs
 #===================================================
-TAG_SELECTOR = """
-        {
-            // Returns the first element matching given selector in the root's subtree.
-            query(root, selector) {
-                return root.querySelector(selector);
-            },
-            // Returns all elements matching given selector in the root's subtree.
-            queryAll(root, selector) {
-                return Array.from(root.querySelectorAll(selector));
-            }
-        }"""
-MAIN_URL = 'https://lms.ssu.ac.kr/'
-ID_LOCATOR = "ID"
-PW_LOCATOR = "PW"
-GET_CLASS_TODO_CLASS_1_FRAME = 'div#root'
-FOR_ID_ITME = '#userid'
-FOR_PW_ITME = '#pwd'
-MY_PAGE= 'https://class.ssu.ac.kr/mypage'
-PER_URL = 'https://canvas.ssu.ac.kr'
-PDF_PAGE_SELECTOR ='xpath=/html/body/div[2]/div[2]/div[2]/div[3]/div[1]/div/div[1]/iframe'
-# 'xpath=/html/body/div[2]/div[2]/div[2]/div[3]/div[1]/div/div[1]/iframe'
-PDF_1_XPATH ='xpath=/html/body/div[2]/div[2]/div[2]/div[3]/div[1]/div/div[1]/iframe'
-PDF_2_XPATH = 'xpath=/html/body/div/div/div[2]/div[2]/iframe'
-# 'xpath=/html/body/div/div/div/div[2]/div/div/div[2]/div[2]/div/div[1]/iframe'
-PDF_3_XPATH = 'xpath=/html/body/div/div/div[2]/div[2]/iframe'
-# 'xpath=/html/body/div/iframe'
-PDF_URL_LOCATOR = 'meta[property="og:image"]'
-PDF_TITLE_LOCATOR = 'meta[property="og:title"]'
-CLASS_TITLE = "meta[name='title']"
-FILE_PAGE_SELECTOR =  'xpath=/html/body/div[2]/div[2]/div[2]/div[3]/div[1]/div/div[1]/iframe'
-FILE_1_XPATH = 'xpath=/html/body/div/div/div[2]/div[2]'
-FILE_LOCATOR = "xpath=/html/body/div/div/div[2]/div[2]"
-FILE_NAME_LOCATOR = '.xnbc-file-name'
-FILE_DOWNLOAD_LOCATOR = '.xnbc-file-download-icon'
-
-EXPAND_LOCATOR = 'iframe#tool_content'
-EXPAND_TEXT = '모두'
-EXPAND_FALSE = '모두 펼치기'
-
-PER_CLASS_URL_EXTERNAL_TOOLS = '/external_tools/71'
-PER_CLASS_URL_EXTERNAL_TOOLS73 = '/external_tools/73'
-PER_CLASS_ALL_PAGE = "#tool_content"
-PER_CLASS_ALL_PAGE_LOCATOR = '.xnmb-module_item-wrapper'
-PER_CLASS_TITLE_LOCATOR = '.xnmb-module_item-left-title.link'
-PER_CLASS_STATUS_LOCATOR = '.xnmb-module_item-icon'
-PER_CLASS_URL_LOCATOR = '.xnmb-module_item-left-title.link'
-PER_CLASS_DATE_CHECK ='.xnmb-module_item-meta_data-left-wrapper'
-PER_CLASS_DATE_LOCATOR = '.xnmb-module_item-meta_data-lecture_periods-due_at'
-PER_CLASS_DATE_START_LOCATOR='.xnmb-module_item-meta_data-lecture_periods-unlock_at'
-PER_CLASS_IS_DONE = 'xpath=/html/body/div/div/div[2]/div[4]/span[3]/span'
 dotenv.load_dotenv()
+liner = Local()
 id = os.environ.get("ID")
 pw = os.environ.get("PW")
+
+
+TAG_SELECTOR = liner.TAG_SELECTOR
+MAIN_URL = liner.MAIN_URL
+ID_LOCATOR = liner.ID_LOCATOR
+PW_LOCATOR =liner.PW_LOCATOR
+GET_CLASS_TODO_CLASS_1_FRAME = liner.GET_CLASS_TODO_CLASS_1_FRAME
+FOR_ID_ITME = liner.FOR_ID_ITME
+FOR_PW_ITME =liner.FOR_PW_ITME
+MY_PAGE= liner.MY_PAGE
+PER_URL = liner.PER_URL
+PDF_PAGE_SELECTOR =liner.PDF_PAGE_SELECTOR
+PDF_1_XPATH =liner.PDF_1_XPATH
+PDF_2_XPATH =liner.PDF_2_XPATH
+PDF_3_XPATH =liner.PDF_3_XPATH
+PDF_URL_LOCATOR =liner.PDF_URL_LOCATOR
+PDF_TITLE_LOCATOR =liner.PDF_TITLE_LOCATOR
+CLASS_TITLE = liner.CLASS_TITLE
+FILE_PAGE_SELECTOR = liner.FILE_PAGE_SELECTOR
+FILE_1_XPATH =liner.FILE_1_XPATH
+FILE_LOCATOR =liner.FILE_LOCATOR
+FILE_NAME_LOCATOR =liner.FILE_NAME_LOCATOR
+FILE_DOWNLOAD_LOCATOR =liner.FILE_DOWNLOAD_LOCATOR
+EXPAND_LOCATOR = liner.EXPAND_LOCATOR
+EXPAND_TEXT = liner.EXPAND_TEXT
+EXPAND_FALSE = liner.EXPAND_FALSE
+
+PER_CLASS_URL_EXTERNAL_TOOLS = liner.PER_CLASS_URL_EXTERNAL_TOOLS
+PER_CLASS_URL_EXTERNAL_TOOLS73 = liner.PER_CLASS_URL_EXTERNAL_TOOLS73
+PER_CLASS_ALL_PAGE = liner.PER_CLASS_ALL_PAGE
+PER_CLASS_ALL_PAGE_LOCATOR = liner.PER_CLASS_ALL_PAGE_LOCATOR
+PER_CLASS_TITLE_LOCATOR = liner.PER_CLASS_TITLE_LOCATOR
+PER_CLASS_STATUS_LOCATOR = liner.PER_CLASS_STATUS_LOCATOR
+PER_CLASS_URL_LOCATOR = liner.PER_CLASS_URL_LOCATOR
+PER_CLASS_DATE_CHECK =liner.PER_CLASS_DATE_CHECK
+PER_CLASS_DATE_LOCATOR = liner.PER_CLASS_DATE_LOCATOR
+PER_CLASS_DATE_START_LOCATOR=liner.PER_CLASS_DATE_START_LOCATOR
+PER_CLASS_IS_DONE = liner.PER_CLASS_IS_DONE
+
 tododict = {'video': 1, 'assignment': 2}
 USER_DASHBOARD = f'https://canvas.ssu.ac.kr/learningx/dashboard?user_login={id}&locale=ko'
 class LearningX:
