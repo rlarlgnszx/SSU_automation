@@ -4,17 +4,17 @@ from playwright.sync_api import Page, expect, sync_playwright , Browser
 import playwright.sync_api as pl
 import os
 import dotenv
-from multiprocessing import Queue, Process,Pool
+from multiprocessing import Queue, Process ,Manager
+from multiprocessing.pool import Pool
 import multiprocessing as mp
-import time
 import requests
-import pickle
 import zipfile
 import threading
 from datetime import datetime
 from urllib.parse import urlsplit, parse_qsl
 from line import Local
-
+import time
+import asyncio
 # import ssuUI
 #=====================================================
 from ssu import SSU
@@ -25,7 +25,6 @@ dotenv.load_dotenv()
 liner = Local()
 id = os.environ.get("ID")
 pw = os.environ.get("PW")
-
 
 TAG_SELECTOR = liner.TAG_SELECTOR
 MAIN_URL = liner.MAIN_URL
@@ -63,9 +62,9 @@ PER_CLASS_DATE_CHECK =liner.PER_CLASS_DATE_CHECK
 PER_CLASS_DATE_LOCATOR = liner.PER_CLASS_DATE_LOCATOR
 PER_CLASS_DATE_START_LOCATOR=liner.PER_CLASS_DATE_START_LOCATOR
 PER_CLASS_IS_DONE = liner.PER_CLASS_IS_DONE
-
-tododict = {'video': 1, 'assignment': 2}
 USER_DASHBOARD = f'https://canvas.ssu.ac.kr/learningx/dashboard?user_login={id}&locale=ko'
+
+
 class LearningX:
     def __init__(self,queue:mp.Queue):
         self.queue = queue
@@ -88,12 +87,11 @@ class LearningX:
 
     #? Queue 통신
     def send_message(self,message):
-        # self.lock.acquire(block=True)
-        # print(f"put message in to :{message}")
         self.queue.put(message)
-        # self.lock.release()
+        
     def get_classlist(self):
         return self.classlist
+    
     def checking_ID_PW(self,id,pw):
         if id!=self.id and id!="":
             self.id=id 
@@ -112,7 +110,44 @@ class LearningX:
                     return True
                 except:
                     return False
+    
+    def per_process_do_first(self,p_cls):
+        print("start")
+        with sync_playwright() as p:
+            for browser_type in [p.chromium]:
+                p.selectors.register("tag",TAG_SELECTOR)
+                desktop = p.devices["Desktop Chrome"]
+                browser = p.chromium.launch(channel='chrome')
+                context1 = browser.new_context(**desktop)
+                page = browser.new_page()
+                check = self.searchID_PW(page, self.id, self.pw)
+                self.get_todo(check,self.classlist[p_cls])
+    def custom_error_callback(self,error):
+        print(f'Got an Error: {error}', flush=True)
     #? pdf,file,assignment
+    def donwload(self,page):
+        for per_class in self.classlist:
+            main_class = self.classlist[per_class]
+            print(per_class)
+            print("PDF FIND >>>>")
+            pdfs = main_class.get_pdf()
+            files = main_class.get_file()
+            for pdf in pdfs:
+                is_end  = self.pdf_page(page,pdf)
+                if is_end==-1:
+                    print(f"RETRY {pdf.title}")
+                    is_end=self.pdf_page(page,pdf)
+                else:
+                    continue
+            for file in files:
+                is_end = self.file_page(page,file)
+                if is_end==-1:
+                    print("RETRY {file.title}")
+                    is_end=self.file_page(page,file)
+                else:
+                    continue
+        self.send_message("end get class")
+    
     def run(self,is_run=True):
         tag_selector = TAG_SELECTOR
         with sync_playwright() as p:
@@ -131,47 +166,66 @@ class LearningX:
                 user_locator = str(temping.locator('.xn-header-member-btn-text.xn-common-title').text_content()).split("(")[0]
                 self.user = user_locator
                 self.send_message(f"Welcome ! : {self.user}")                
-                classes = self.get_class(temping) #main class get & save
+                classes = self.get_class(temping) 
                 #! 맨처음 시작할때
                 if not is_run:
-                    print("PER CLASS ALL DOWNLOADING >>>>>..")
-                    self.get_todo(page)
+                    page_list = []
+                    for i in self.classlist:
+                        page_list.append(self.searchID_PW(browser.new_page(),self.id,self.pw))
+
+                    main_class_name_list = self.classlist.keys()
+                    process_list = []
+                    for i,class_name in enumerate(main_class_name_list):
+                        process_list.append(threading.Thread(target=self.per_process_do_first,args=(class_name,)))
+                    now = time.time()
+                    for start in process_list:
+                        try:
+                            start:threading.Thread
+                            start.start()
+                            time.sleep(1) 
+                        except:
+                            time.sleep(1)
+                            start.start()
+                            pass
+                    for t in process_list:
+                        t:threading.Thread
+                        t.join()
+                    print("all end")
+                    end = time.time()
+                    print(end-now)
                     self.make_dir()
                     browser.close()
                     print("PER CLASS DOWNLOAD END..")
                     return self.show_class_dict()
+    
 
-                self.index = 0
-                self.before = 0
-                self.checking_set= set()
-                main_key = list(self.classlist.keys())
-                self.send_message(f"수업 개수 :  {len(main_key)}")
-                for per_class in self.classlist:
-                    main_class = self.classlist[per_class]
-                    print(per_class)
-                    print("PDF FIND >>>>")
-                    # main_class.show()
-                    pdfs = main_class.get_pdf()
-                    files = main_class.get_file()
-                    for pdf in pdfs:
-                        is_end  = self.pdf_page(page,pdf)
-                        if is_end==-1:
-                            print("RETRY {pdf.title}")
-                            is_end=self.pdf_page(page,pdf)
-                        else:
-                            continue
-                    # print("FILE FIND >>>>")
-                    for file in files:
-                        is_end = self.file_page(page,file)
-                        if is_end==-1:
-                            print("RETRY {file.title}")
-                            is_end=self.file_page(page,file)
-                        else:
-                            continue
-                self.send_message("end get class")
+
+                # main_key = list(self.classlist.keys())
+                # self.send_message(f"수업 개수 :  {len(main_key)}")
+                # for per_class in self.classlist:
+                #     main_class = self.classlist[per_class]
+                #     print(per_class)
+                #     print("PDF FIND >>>>")
+                #     pdfs = main_class.get_pdf()
+                #     files = main_class.get_file()
+                #     for pdf in pdfs:
+                #         is_end  = self.pdf_page(page,pdf)
+                #         if is_end==-1:
+                #             print(f"RETRY {pdf.title}")
+                #             is_end=self.pdf_page(page,pdf)
+                #         else:
+                #             continue
+                #     for file in files:
+                #         is_end = self.file_page(page,file)
+                #         if is_end==-1:
+                #             print("RETRY {file.title}")
+                #             is_end=self.file_page(page,file)
+                #         else:
+                #             continue
+                # self.send_message("end get class")
                 browser.close()
         return 
-    # ============================동영상 강의 자동재생 =================================
+    # ============================동영상 강의 STREAM =================================
     def stream(self):
         tag_selector =TAG_SELECTOR
         self.send_message("STREAM START")
@@ -184,10 +238,6 @@ class LearningX:
                 self.context2 = browser.new_context(**desktop)
                 page = browser.new_page()
                 temping = self.searchID_PW(page, self.id, self.pw)
-                #----------------
-                # i = self.get_class(page)
-                # self.get_todo(page)
-                #--------------------------------
                 self.stream_from_ssu(page)
                 self.send_message("end get class")
                 browser.close()
@@ -294,60 +344,46 @@ class LearningX:
             input_SSU:main_class = main_class(name.inner_text(), url, page) #title ,url ,per page
             if not name.inner_text() in self.classlist:
                 self.classlist[name.inner_text()] = input_SSU
-        # self.make_dir()
         return all_class
     
-    def get_todo(self,page:Page):
+    def get_todo(self,page:Page,main_class:main_class):
         now = datetime.now()
-        for p_cls in self.classlist: #각 수업의 
-            class_url = self.classlist[p_cls].url
-            class_name = p_cls
-            page.goto(class_url+PER_CLASS_URL_EXTERNAL_TOOLS)
-            page.wait_for_load_state('domcontentloaded')
-            # page.wait_for_load_state('networkidle')
-            self.expand_c_list(page)
-            print("class MAIN NAME : ",class_name)
-            per_class_all = page.frame_locator(PER_CLASS_ALL_PAGE)
-            per_class_all = per_class_all.locator(PER_CLASS_ALL_PAGE_LOCATOR)
-            count = per_class_all.count()
-            class_main:main_class = self.classlist[class_name]
-            for i in range(count):#수업안에 소클래스
-                get_class = per_class_all.nth(i)
-                class_status = get_class.locator(PER_CLASS_STATUS_LOCATOR)
-                class_title = get_class.locator(PER_CLASS_TITLE_LOCATOR)
-                class_per_url = get_class.locator(PER_CLASS_URL_LOCATOR).get_attribute('href')
-                class_rest =''
-                class_status = class_status.get_attribute('class')
-                if get_class.locator(PER_CLASS_DATE_CHECK).text_content()!="":
-                    class_rest = get_class.locator(PER_CLASS_DATE_LOCATOR)
-                    if get_class.locator(PER_CLASS_DATE_CHECK).text_content().startswith("시작"):
-                        class_rest = class_rest.locator('span').text_content()    
-                        print(class_rest)
-                        class_rest = self.time_mining(class_rest)
-                        print(class_rest)
-                        unlock= get_class.locator(PER_CLASS_DATE_START_LOCATOR).locator('span').text_content()
-                        unlock = self.time_mining(unlock)
-                        if now<unlock:
-                            continue
-                    else:
-                        class_rest = class_rest.locator('span').text_content()    
-                        print(class_rest)
-                        class_rest = self.time_mining(class_rest)
-                        print(class_rest)
-                # print(class_main.url)
-                class_main.add_property(class_title.text_content(),PER_URL+class_per_url,class_status,class_rest)
-                print(class_title.text_content(),PER_URL+class_per_url,class_status,class_rest)
-            
-        for p_cls in self.classlist:
-            print(p_cls)
-            class_url = self.classlist[p_cls].url
-            class_name = p_cls
-            class_main:main_class = self.classlist[class_name]
-            class_main=self.check_todo_done(class_main,page)
-            for video in class_main.get_video():
-                print(video.show())
-                self.ssu.add_todo_class(video)
-        # self.ssu.showing_main()
+        class_url = main_class.url
+        class_name = main_class.title
+        print(class_name,"시작합니다")
+        page.goto(class_url+PER_CLASS_URL_EXTERNAL_TOOLS)
+        page.wait_for_load_state('domcontentloaded')
+        self.expand_c_list(page)
+        # print("class MAIN NAME : ",class_name)
+        per_class_all = page.frame_locator(PER_CLASS_ALL_PAGE)
+        per_class_all = per_class_all.locator(PER_CLASS_ALL_PAGE_LOCATOR)
+        count = per_class_all.count()
+        for i in range(count):#수업안에 소클래스
+            get_class = per_class_all.nth(i)
+            class_status = get_class.locator(PER_CLASS_STATUS_LOCATOR)
+            class_title = get_class.locator(PER_CLASS_TITLE_LOCATOR)
+            class_per_url = get_class.locator(PER_CLASS_URL_LOCATOR).get_attribute('href')
+            class_rest =''
+            class_status = class_status.get_attribute('class')
+            if "시작" in get_class.locator(PER_CLASS_DATE_CHECK).text_content() or "마감" in get_class.locator(PER_CLASS_DATE_CHECK).text_content():
+                class_rest = get_class.locator(PER_CLASS_DATE_LOCATOR)
+                if get_class.locator(PER_CLASS_DATE_CHECK).text_content().startswith("시작"):
+                    class_rest = class_rest.locator('span').text_content()    
+                    class_rest = self.time_mining(class_rest)
+                    unlock= get_class.locator(PER_CLASS_DATE_START_LOCATOR).locator('span').text_content()
+                    unlock = self.time_mining(unlock)
+                    if now<unlock:
+                        continue
+                else:
+                    class_rest = class_rest.locator('span').text_content()    
+                    class_rest = self.time_mining(class_rest)
+            main_class.add_property(class_title.text_content(),PER_URL+class_per_url,class_status,class_rest)
+            print(class_title.text_content(),PER_URL+class_per_url,class_status,class_rest)
+        main_class=self.check_todo_done(main_class,page)
+        for video in main_class.get_video():
+            print(video.show())
+            self.ssu.add_todo_class(video)
+        print(class_name,"종료")
     
     #class / pdf,assignment,files
     def time_mining(self,time):
@@ -438,6 +474,8 @@ class LearningX:
                     for chunk in r.iter_content(chunk_size=2000):
                         fd.write(chunk)
                     self.send_message('download FINISHED')
+            else:
+                self.send_message(f"{pdf_title} 이 이미 있습니다.")
             return 1
         except Exception as e:
             print(e)
@@ -479,7 +517,8 @@ class LearningX:
             else:
                 if fileexpand=='zip' and not os.path.exists(f'./{class_name}/files/{str(filename)[:-4]}'):
                     zipfile_path= f'./{class_name}/files/{filename}'
-                    file_path =  f'./{class_name}/files/'
+                    file_path =  f'./{class_name}/files/{filename[:-4]}'
+                    os.makedirs(file_path, exist_ok=True)
                     self.unzip(zipfile_path,file_path)
                     self.send_message('FILE 압축 해제')
                 self.send_message(f"{filename} 이 이미 있습니다.")
@@ -526,11 +565,10 @@ class LearningX:
         frame = page.frame_locator(EXPAND_LOCATOR)
         try:
             check = frame.get_by_text(EXPAND_TEXT).text_content()
-            print(str(check))
             if EXPAND_FALSE in str(check):
                 frame.get_by_text(EXPAND_FALSE).click()
             else:
-                pass
+                return
         except Exception as e:
             print(e)
     

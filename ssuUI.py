@@ -6,6 +6,7 @@ import complex_example
 customtkinter.set_appearance_mode("dark")
 from multiprocessing import Queue
 import os
+import time
 from dotenv import load_dotenv,find_dotenv ,set_key
 
 class LoginErrorWindow(customtkinter.CTkToplevel):
@@ -24,6 +25,7 @@ class App(customtkinter.CTk):
         self.title("SSU AutoMation feat. Kiru")
         self.geometry(f"{self.width}x{self.height}")
         self.resizable(False, False)
+        load_dotenv()
         self.dotenv_file = find_dotenv()
         load_dotenv(self.dotenv_file)
         current_path = os.path.dirname(os.path.realpath(__file__))
@@ -75,8 +77,8 @@ class App(customtkinter.CTk):
             set_key(self.dotenv_file,"CHECK","1")
     
     def login_event(self):
+        a = time.time()
         print("Login pressed - username:", self.username_entry.get(), "password:", self.password_entry.get())
-        
         # remove login frame
         self.running = learn_x2.LearningX(self.queue)
         is_login = self.running.checking_ID_PW(self.username_entry.get(),self.password_entry.get())
@@ -87,12 +89,15 @@ class App(customtkinter.CTk):
             self.todo_classlist = self.running.get_todo_2_dict()
             self.classlist = self.class_mining(self.classlist)
             self.next = complex_example.App(self.queue,self.classlist,self.todo_classlist,self.running)
+            b = time.time()
+            print(a-b,"time")
             self.destroy()
             self.next.mainloop()
         else:
             self.loginerror = LoginErrorWindow(self)
             self.loginerror.focus()
         return True
+    
     def open_dialog(self):
         dialog = customtkinter.CTk(text="Type in a number:", title="Test")
     

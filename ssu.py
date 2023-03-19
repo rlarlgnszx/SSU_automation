@@ -42,8 +42,8 @@ class SSU:
             self.now:todo_class = current_
         except IndexError:
             raise IndexError
-        send_message("=====================================")
         
+        send_message("=====================================")
         send_message(self.now.class_status)
         send_message(f"TITLE:{self.now.title}")
         if (not self.now.isDone):
@@ -134,7 +134,11 @@ class SSU:
             return 1
         else:
             self.curent_stream+=1
-            k = self.streaming(queue,page)
+            try:
+                k = self.streaming(queue,page)
+            except RecursionError as e:
+                print(e)
+                return -1
             if k==-1:
                 return
     def done_2_classlist(self,title):
