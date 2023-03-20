@@ -22,4 +22,5 @@ FILE PATH 경로
 ```
     pip install pytest-playwright
     playwright install chromium
+    pip install -r requirements.txt
 ```
