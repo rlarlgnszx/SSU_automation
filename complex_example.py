@@ -20,10 +20,6 @@ class App(customtkinter.CTk):
         self.learning= learningX #Learning X
         # print(self.lea)
         self.carry = self.learning.get_classlist()
-        # self.learning.classlist=self.carry
-        
-        # for cls in self.carry:
-        #     print(self.carry[cls].show())
         
         self.title("SSU AUTO MATION BY .KIRU")
         
@@ -64,8 +60,6 @@ class App(customtkinter.CTk):
         self.scaling_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["80%", "90%", "100%", "110%", "120%"],
                                                                command=self.change_scaling_event)
         self.scaling_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 20))
-        
-        
         
         # create main entry and button
         self.entry = customtkinter.CTkEntry(self, placeholder_text="Log")

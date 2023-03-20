@@ -197,9 +197,8 @@ class LearningX:
                     browser.close()
                     print("PER CLASS DOWNLOAD END..")
                     return self.show_class_dict()
-    
-
-
+                else:
+                    self.donwload(page)
                 # main_key = list(self.classlist.keys())
                 # self.send_message(f"수업 개수 :  {len(main_key)}")
                 # for per_class in self.classlist:
@@ -251,7 +250,7 @@ class LearningX:
         tr_locator = frame.locator('tbody').locator('tr')
         external_dict = {}
         count = tr_locator.count()
-        print(count)
+        # print(count)
         for index in range(count):
             current = tr_locator.nth(index)
             title =current.locator('.xnlaltas-table-column-title').text_content()
@@ -715,11 +714,11 @@ class LearningX:
     def get_todo_2_dict(self):
         return self.ssu.get_todo()
 
-if __name__ == '__main__':
-    b = Queue()
-    # a = LearningX(b).run(True)
-    a = LearningX(b).run(False)
-    a.run(True)
+# if __name__ == '__main__':
+#     b = Queue()
+#     # a = LearningX(b).run(True)
+#     a = LearningX(b).run(False)
+#     a.run(True)
         
     # def get_class_todo_class(self,page: Page, start_todo_class=False):
     #     print("def : get class todo class")

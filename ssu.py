@@ -51,7 +51,6 @@ class SSU:
             page.wait_for_load_state('networkidle')
             page.wait_for_load_state('domcontentloaded')
             frame= page.frame_locator('#tool_content').locator("#document")
-            
             stack = dump_frame_tree(page.main_frame,"",[])
             check=False
             frame_url=''
