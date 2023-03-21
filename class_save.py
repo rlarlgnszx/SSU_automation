@@ -21,7 +21,8 @@ class main_class:
             heappush(self.video,temp_todo)
         elif "file" in status:
             heappush(self.file,temp_todo)
-    
+        elif "assignment" in status:
+            heappush(self.assginment,temp_todo)
     def show(self):
         print("pdf:",self.pdf)
         print("video:",self.video)
@@ -35,6 +36,10 @@ class main_class:
     
     def get_video(self):
         return self.video
+    
+    def get_assignment(self):
+        return self.assginment
+    
 class todo_class:
     def __init__(self,title,url,class_status,main_class_name,page:Page,rest_time=''):
         self.title= title

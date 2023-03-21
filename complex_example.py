@@ -17,8 +17,7 @@ class App(customtkinter.CTk):
         self.queue=queue
         self.classlist= classlist
         self.todo_classlist = todo_classlist
-        self.learning= learningX #Learning X
-        # print(self.lea)
+        self.learning= learningX #Learning 
         self.carry = self.learning.get_classlist()
         
         self.title("SSU AUTO MATION BY .KIRU")

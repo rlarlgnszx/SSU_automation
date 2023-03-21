@@ -110,7 +110,21 @@ class LearningX:
                     return True
                 except:
                     return False
-    
+    def get_assigment_first(self):
+        with sync_playwright() as p:
+            for browser_type in [p.chromium]:
+                p.selectors.register("tag",TAG_SELECTOR)
+                desktop = p.devices["Desktop Chrome"]
+                browser = p.chromium.launch(channel='chrome')
+                context1 = browser.new_context(**desktop)
+                page = browser.new_page()
+                check = self.searchID_PW(page, self.id, self.pw)
+                for class_name in self.classlist:
+                    mainC:main_class = self.classlist[class_name]
+                    assigments = mainC.get_assignment()
+                    for assign in assigments:
+                        self.assignment_page(check,assign)
+            
     def per_process_do_first(self,p_cls):
         print("start")
         with sync_playwright() as p:
@@ -122,6 +136,7 @@ class LearningX:
                 page = browser.new_page()
                 check = self.searchID_PW(page, self.id, self.pw)
                 self.get_todo(check,self.classlist[p_cls])
+                
     def custom_error_callback(self,error):
         print(f'Got an Error: {error}', flush=True)
     #? pdf,file,assignment
@@ -190,6 +205,8 @@ class LearningX:
                     for t in process_list:
                         t:threading.Thread
                         t.join()
+                    assign = threading.Thread(target=self.get_assigment_first)
+                    assign.start()
                     print("all end")
                     end = time.time()
                     print(end-now)
@@ -441,8 +458,10 @@ class LearningX:
     def pdf_page(self,page:Page, todo_class:todo_class):
         class_url=todo_class.url
         class_name=todo_class.main_class_name
-        print(class_url)
         print(class_name)
+        pdf_title = self.clean_text(todo_class.title)
+        if os.path.exists(f'./{class_name}/pdf/{pdf_title}.pdf'):
+            return 1
         try:
             # class_title.click()
             page.goto(class_url)
@@ -486,7 +505,9 @@ class LearningX:
     def file_page(self, page:Page,todo_class:todo_class):
         class_url = todo_class.url
         class_name = todo_class.main_class_name
-        
+        filename = self.clean_text(todo_class.title)
+        if os.path.exists(f'./{class_name}/files/{filename}'):
+            return 1
         try:
             self.send_message("=============File_donwload 시작=================")
             # self.send_message(self.class_pickle[class_name][class_temp])
@@ -528,32 +549,33 @@ class LearningX:
             self.send_message("FILE_PAGE ERROR")
             return -1
 
-    #! 미완성
-    def assignment_page(self, class_name:str, page:Page,class_title:pl.Locator):
-            class_title.click()
-            page.wait_for_load_state('networkidle')
-            firstframe = page.frame_locator('iframe#tool_content')
-            assignment = firstframe.locator(".xn-unit-container")
-            assignment.screenshot(path=f'./{class_name}/assignment/{class_title}.png')
-            self.send_message("screenshot!")
+    def assignment_page(self,page:Page, todo_class:todo_class):
+        class_url = todo_class.url
+        class_name = todo_class.main_class_name
+        print(class_name)
+        title:str = todo_class.title.strip()
+        title = title.strip('\n')
+        if os.path.exists(f'./{class_name}/assignment/{title}.png'):
+            print("IT HAVE!")
+            return
+        else:
             try:
-                href = firstframe.locator('href')
-                href_count = href.count()
-            except:
-                href = 0
-                href_count=0
-            self.send_message(href_count)
-            if href_count>0:
-                assignment_file = firstframe.locator('.instructure_file_link.instructure_scribd_file')
-                self.send_message(f'Assignment Download Checking : {assignment_file.get_attribute("title")}')
-                with page.expect_download() as download_info:
-                    assignment_file.click()
-                download = download_info.value
-                download.save_as(os.path.join(f'./{class_name}/assignment/{assignment_file.get_attribute("title")}'))
-                self.send_message('Assignment download FINISHED')
-            else:
-                self.send_message("Assignment no file")
-            return 
+                print("make png...")
+                self.send_message("=============assigment_load=================")
+                page.goto(class_url)
+                page.wait_for_load_state('networkidle')
+                page.wait_for_selector('h1.title')
+                title = page.locator('h1.title').text_content().strip().strip('\n')
+                assignment_box = page.locator('#assignment_show')
+                assignment = assignment_box.locator(".description")
+                assignment.screenshot(path=f'./{class_name}/assignment/{title}.png')
+                print(assignment.all_text_contents())
+                return 
+            except Exception as e:
+                todo_class.is_fail=True
+                print(e)
+                self.send_message("FILE_PAGE ERROR")
+                return -1
 
     def notice_page(self,page:Page):
         #! 추후 작업 예정
@@ -601,94 +623,6 @@ class LearningX:
             print(e)
 
 
-    #각 class tool 73안에서 일어나는 일
-    def per_class_download(self, page: Page,class_name:str,class_url:str,class_index:int,checking_set:set):
-        pass
-        # page.goto(class_url+PER_CLASS_URL_EXTERNAL_TOOLS)
-        # page.wait_for_load_state('domcontentloaded')
-        # page.wait_for_load_state('networkidle')
-        # self.expand_c_list(page)
-        # #? page 확장
-        # print("class MAIN NAME : ",class_name)
-        # per_class_all = page.frame_locator(PER_CLASS_ALL_PAGE)
-        # per_class_all = per_class_all.locator(PER_CLASS_ALL_PAGE_LOCATOR)#queryselect all
-        # count = per_class_all.count()
-        # #? recursive 다 checking 시
-        # if count==len(checking_set):
-        #     self.send_message(f"count와 checking_set : {count}, {len(checking_set)}")
-        #     return True
-        # if class_index == 0 and class_name not in self.class_pickle:
-        #     class_main:main_class = self.classlist[class_name]
-        #     class_per_dict = dict()
-        #     class_per_dict['name'] = class_name
-        #     class_per_dict['url'] = class_url
-        #     main_per_class = main_class(class_name, class_url+PER_CLASS_URL_EXTERNAL_TOOLS, page)
-        #     self.class_pickle[class_name]=dict()
-        #     for i in range(count):
-        #         get_class = per_class_all.nth(i)
-        #         class_status = get_class.locator(PER_CLASS_STATUS_LOCATOR)
-        #         class_title = get_class.locator(PER_CLASS_TITLE_LOCATOR)
-        #         class_per_url = get_class.locator(PER_CLASS_URL_LOCATOR).get_attribute('href')
-        #         class_status = class_status.get_attribute('class')
-        #         class_main.add_property(class_title.text_content(),class_per_url,class_status)
-        #         self.class_pickle[class_name][str(class_title.text_content())]=False
-        #     self.send_message("MAIN CLASS GET ")
-        #     # for j in self.classlist:
-        #     #     self.classlist[j].show()
-        # if class_index == count:
-        #     self.send_message(f"{class_name} 끝! 다음으로 넘어갑니다.")
-        #     return True
-        # try:
-        #     self.send_message("하위 항목 살피기 ...")
-        #     while class_index < count:
-        #         class_ = per_class_all.nth(class_index)
-        #         self.send_message('===========================================')
-        #         self.send_message(f"현재 index : {class_index}")
-        #         self.send_message(f"총 index : {count}")
-        #         class_status = class_.locator(PER_CLASS_STATUS_LOCATOR)
-        #         class_title = class_.locator(PER_CLASS_TITLE_LOCATOR)
-        #         # self.send_message(type(class_title))
-        #         class_status = class_status.get_attribute('class')
-        #         self.send_message(class_title.text_content())
-        #         self.send_message(class_status)
-        #         if class_title.text_content() in checking_set:
-        #             self.send_message(f"{class_title.text_content()} 을 건너뜁니다.")
-        #             class_index += 1
-        #             continue
-        #         else:
-        #             checking_set.add(class_title.text_content())
-        #             class_status = str(class_status).split()
-        #             try:
-        #                 class_temp = str(class_title.text_content())
-        #                 if "pdf" in class_status and not os.path.exists(f'./{class_name}/pdf/{class_temp}.pdf'):
-        #                     self.pdf_page(class_name, page, class_title,class_temp,self.class_pickle)
-        #                     class_index = self.per_class_download(page, class_name, class_url,class_index,checking_set)
-        #                     page.wait_for_load_state('networkidle')
-        #                 elif "file" in class_status and not os.path.isfile(f'./{class_name}/files/{class_temp}'):
-        #                     self.file_page(class_name, page, class_title,class_temp, self.class_pickle)
-        #                     class_index = self.per_class_download(page, class_name, class_url,class_index,checking_set)
-        #                     page.wait_for_load_state('domcontentloaded')
-        #                 else:
-        #                     self.class_pickle[class_name][class_temp]=True
-        #                 # elif "assignment" in class_status and not os.path.exists(f'./{class_name}/assignment/{class_title.text_content()}'):
-        #                 #     self.assignment_page(class_name, page, class_title)
-        #                 #     class_index = self.per_class_download(page, class_name, class_url,class_index+1,checking_set)
-        #                 #     page.wait_for_load_state('domcontentloaded')
-        #                 if class_index == True and type(class_index) is bool:
-        #                     return True
-        #                 if class_index>=count:
-        #                     return True
-        #             except:
-        #                 self.send_message(f"{class_title.text_content()} : {class_index} : ERROR")
-        #                 # self.classlist[class_name].class_list_error.append(class_index)
-        #             class_index+=1
-        #             self.send_message("=====================end===================")
-        # except:
-        #     self.send_message(f"{class_name} : : {class_index} : ERROR")
-        #     return class_index
-        # return True
-
-
     #메인 서버에서 접속불가시 우회접속==========================
     
     def main_server_shut_down(self, p: Page,classes_url:list):
@@ -714,67 +648,3 @@ class LearningX:
     def get_todo_2_dict(self):
         return self.ssu.get_todo()
 
-# if __name__ == '__main__':
-#     b = Queue()
-#     # a = LearningX(b).run(True)
-#     a = LearningX(b).run(False)
-#     a.run(True)
-        
-    # def get_class_todo_class(self,page: Page, start_todo_class=False):
-    #     print("def : get class todo class")
-    #     page.goto(
-    #         USER_DASHBOARD)
-    #     page.wait_for_load_state('networkidle')
-    #     page.inner_html(GET_CLASS_TODO_CLASS_1_FRAME)
-    #     temp = page.get_by_text('모두 펼치기')
-    #     temp.click()
-    #     page.screenshot(path='start.png')
-    #     html = page.locator('xpath=//*[@id="root"]/div/div/div[2]/div[2]')
-    #     todo_class_list = html.locator(
-    #     '.xn-student-todo-item-container')
-    #     main_class_list = html.locator('.xnscc-header-title')
-    #     count = todo_class_list.count()
-    #     if count >= 1:
-    #         for i in range(count):
-    #             main_class_name = main_class_list.nth(i).text_content()
-    #             print(main_class_name+"\n")
-    #             class_status = todo_class_list.nth(i).locator(
-    #                 '.xnsti-left-icon').get_attribute('class')
-    #             class_title = todo_class_list.nth(i).locator('.xnsti-left-title')
-    #             class_rest = todo_class_list.nth(i).locator(
-    #                 '.xnsti-right-dday-text').text_content()
-    #             class_url = class_title.get_attribute('href')
-    #             query_string = urlsplit(class_url).query
-    #             parsed = dict(parse_qsl(query_string))
-    #             class_url = class_url.split('/')
-    #             class_id = class_url[6]
-    #             print(parsed)
-    #             item_id =  parsed['component_info'].split(":")[1][:-1]
-    #             class_url = self.url_parse(class_id,item_id)
-    #             class_title = class_title.text_content()
-    #             self.ssu.add_todo_class(todo_class(class_title, class_url, class_rest, class_status, page,main_class_name))
-    
-    #     if start_todo_class:
-    #         print("SSU FORWARDING...")
-    #         while 1:
-    #             try:
-    #                 self.ssu.streaming(self.queue)
-    #                 self.ssu.curent_stream += 1
-    #             except IndexError:
-    #                 self.send_message("all done")
-    #                 return 1,1
-    #             except Exception as e:
-    #                 print(e)
-    #                 return 1,1
-    
-    #         class_name = page.query_selector_all('.xnscc-header-title')
-    #         class_url = page.query_selector_all('.xnscc-header-redirect-link')
-    #         all_class = dict()
-    #         for index, name in enumerate(class_name):
-    #             name.select_text()
-    #             url = class_url[index].get_attribute('href')
-    #             class_url[index]
-    #             all_class[name.inner_text()] = {"url": url}
-    #         return page, all_class
-    #     else:
-    #         return 1,1
