@@ -106,15 +106,9 @@ class SSU:
                 count = 0
                 allow_upper_speed = page.locator(".confirm-ok-btn .confirm-btn")
                 #=====================speed x2 =================================
-                print(page.url)
+                # print(page.url)
                 speed = page.locator('xpath=/html/body/div[1]/div[1]/div/div[9]/div/div/div[2]/div[13]/div[5]')
                 speed.dispatch_event('click')
-                print(speed.get_attribute('id'))
-                # speed = play_load.query_selector("#vc-pctrl-playback-rate-20")
-                # speed.click()
-                # print(speed.get_attribute('class'))
-                #================================================================
-                # print(current_progress)
                 while current_progress <= 90:
                     before_progress=current_progress
                     send_message(f"PROGRESS:{current_progress}")
@@ -126,7 +120,7 @@ class SSU:
                     if before_progress==current_progress:
                         page.locator(".confirm-ok-btn.confirm-btn").dispatch_event('click')
                         speed.dispatch_event('click')
-                    # now.class_page.screenshot(path=f'{count}_.png')
+                    
                     count+=1
                 self.now.check_done()
                 send_message(f"end {self.now.title}")

@@ -127,7 +127,7 @@ class LearningX:
                         self.assignment_page(check,assign)
             
     def per_process_do_first(self,p_cls):
-        print("start")
+        print("start ThreadProcess")
         with sync_playwright() as p:
             for browser_type in [p.chromium]:
                 p.selectors.register("tag",TAG_SELECTOR)
@@ -145,7 +145,7 @@ class LearningX:
         for per_class in self.classlist:
             main_class = self.classlist[per_class]
             print(per_class)
-            print("PDF FIND >>>>")
+            # print("PDF FIND >>>>")
             pdfs = main_class.get_pdf()
             files = main_class.get_file()
             for pdf in pdfs:
@@ -158,7 +158,7 @@ class LearningX:
             for file in files:
                 is_end = self.file_page(page,file)
                 if is_end==-1:
-                    print("RETRY {file.title}")
+                    print(f"RETRY {file.title}")
                     is_end=self.file_page(page,file)
                 else:
                     continue
@@ -368,7 +368,7 @@ class LearningX:
         now = datetime.now()
         class_url = main_class.url
         class_name = main_class.title
-        print(class_name,"시작합니다")
+        print(f"{class_name} Thread Start")
         page.goto(class_url+PER_CLASS_URL_EXTERNAL_TOOLS)
         page.wait_for_load_state('domcontentloaded')
         self.expand_c_list(page)
@@ -396,12 +396,12 @@ class LearningX:
                     class_rest = class_rest.locator('span').text_content()    
                     class_rest = self.time_mining(class_rest)
             main_class.add_property(class_title.text_content(),PER_URL+class_per_url,class_status,class_rest)
-            print(class_title.text_content(),PER_URL+class_per_url,class_status,class_rest)
+            # print(class_title.text_content(),PER_URL+class_per_url,class_status,class_rest)
         main_class=self.check_todo_done(main_class,page)
         for video in main_class.get_video():
-            print(video.show())
+            # print(video.show())
             self.ssu.add_todo_class(video)
-        print(class_name,"종료")
+        print(f"{class_name} Thread 종료")
     
     #class / pdf,assignment,files
     def time_mining(self,time):
@@ -460,7 +460,7 @@ class LearningX:
     def pdf_page(self,page:Page, todo_class:todo_class):
         class_url=todo_class.url
         class_name=todo_class.main_class_name
-        print(class_name)
+        # print(class_name)
         pdf_title = self.clean_text(todo_class.title)
         if os.path.exists(f'./{class_name}/pdf/{pdf_title}.pdf'):
             return 1
@@ -487,7 +487,7 @@ class LearningX:
             self.send_message("pdf_donload")
             r = requests.get(str(pdf_url), stream=True)
             pdf_title = self.clean_text(pdf_title)
-            print(pdf_title)
+            # print(pdf_title)
             if not os.path.exists(f'./{class_name}/pdf/{pdf_title}.pdf'):
                 self.send_message(f'start download {pdf_title}')
                 with open(f'./{class_name}/pdf/{pdf_title}.pdf', 'wb') as fd:
@@ -522,12 +522,12 @@ class LearningX:
             pdf_url = ""
             firstframe = page.frame_locator(
                 FILE_PAGE_SELECTOR)
-            print("FILE_PAGE_SELECTOR OK ")
+            # print("FILE_PAGE_SELECTOR OK ")
             file = firstframe.locator(FILE_LOCATOR)
-            print("file container OK")
+            # print("file container OK")
             filename =file.locator(FILE_NAME_LOCATOR).text_content()
             filename = self.clean_text(filename)
-            print("filename OK")
+            # print("filename OK")
             self.send_message(f"FILE : {filename} Downloading...")
             fileexpand= str(filename).split(".")[-1]
             if not os.path.exists(f'./{class_name}/files/{filename}'):
@@ -554,7 +554,7 @@ class LearningX:
     def assignment_page(self,page:Page, todo_class:todo_class):
         class_url = todo_class.url
         class_name = todo_class.main_class_name
-        print(class_name)
+        # print(class_name)
         title:str = todo_class.title.strip()
         title = title.strip('\n')
         if os.path.exists(f'./{class_name}/assignment/{title}.png'):
@@ -562,7 +562,7 @@ class LearningX:
             return
         else:
             try:
-                print("make png...")
+                # print("make png...")
                 self.send_message("=============assigment_load=================")
                 page.goto(class_url)
                 page.wait_for_load_state('networkidle')
@@ -573,7 +573,7 @@ class LearningX:
                 assignment.screenshot(path=f'./{class_name}/assignment/{title}.png')
                 path = f'./{class_name}/assignment/{title}.png'
                 todo_class.set_image_path(path)
-                print(path)
+                # print(path)
                 return 
             except Exception as e:
                 todo_class.is_fail=True

@@ -18,7 +18,7 @@ FILE PATH 경로
     ->files
     ->pdfs
     ->assignments
-
+<h1>Python Version >= 3.10 <h1>
 ```
     pip install pytest-playwright
     playwright install chromium
