@@ -1,5 +1,5 @@
 import customtkinter
-from PIL import Image
+from PIL import Image 
 import os
 import learn_x2
 import complex_example
@@ -33,6 +33,7 @@ class App(customtkinter.CTk):
                                                size=(self.width, self.height))
         self.bg_image_label = customtkinter.CTkLabel(self, image=self.bg_image)
         self.bg_image_label.grid(row=0, column=0)
+        self.toplevel_window = None
 
         # create login frame
         self.login_frame = customtkinter.CTkFrame(self, corner_radius=0)
@@ -46,14 +47,12 @@ class App(customtkinter.CTk):
         self.password_entry.grid(row=2, column=0, padx=30, pady=(0, 15))
         self.login_button = customtkinter.CTkButton(self.login_frame, text="Login", command=self.login_event, width=200)
         self.login_button.grid(row=3, column=0, padx=30, pady=(15, 15))
-
         # create main frame
         self.main_frame = customtkinter.CTkFrame(self, corner_radius=0)
         self.main_frame.grid_columnconfigure(0, weight=1)
         self.main_label = customtkinter.CTkLabel(self.main_frame, text=f"Hello \n{self.username_entry.get()}",
                                                  font=customtkinter.CTkFont(size=20, weight="bold"))
         self.main_label.grid(row=0, column=0, padx=30, pady=(30, 15))
-         
         self.checkbox = customtkinter.CTkCheckBox(self.login_frame,text="REMEMBER?",onvalue="on",offvalue="off",command=self.checkbox_event)
         self.checkbox.grid(row=4, column=0, pady=(20, 0), padx=20, sticky="n")
         try:
@@ -61,6 +60,7 @@ class App(customtkinter.CTk):
                 self.checkbox.select()
         except:
             pass
+    
     def checkbox_event(self):
         print(self.checkbox.get())
     #! Login EVENT
@@ -79,7 +79,6 @@ class App(customtkinter.CTk):
     def login_event(self):
         a = time.time()
         print("Login pressed - username:", self.username_entry.get(), "password:", self.password_entry.get())
-        # remove login frame
         self.running = learn_x2.LearningX(self.queue)
         is_login = self.running.checking_ID_PW(self.username_entry.get(),self.password_entry.get())
         if is_login:
@@ -90,16 +89,19 @@ class App(customtkinter.CTk):
             self.classlist = self.class_mining(self.classlist)
             self.next = complex_example.App(self.queue,self.classlist,self.todo_classlist,self.running)
             b = time.time()
-            print(a-b,"time")
+            print(b-a,"time")
             self.destroy()
             self.next.mainloop()
         else:
-            self.loginerror = LoginErrorWindow(self)
-            self.loginerror.focus()
+            if self.queue.get():
+                print("WOW EORRO!")
         return True
     
-    def open_dialog(self):
-        dialog = customtkinter.CTk(text="Type in a number:", title="Test")
+    def open_login_error(self):
+        if self.toplevel_window is None or not self.toplevel_window.winfo_exists():
+            self.toplevel_window = LoginErrorWindow(self)  # create window if its None or destroyed
+        else:
+            self.toplevel_window.focus()
     
     def class_mining(self,data):
         classes = {}

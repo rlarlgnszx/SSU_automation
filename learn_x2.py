@@ -90,6 +90,7 @@ class LearningX:
         self.queue.put(message)
         
     def get_classlist(self):
+        """return classlist"""
         return self.classlist
     
     def checking_ID_PW(self,id,pw):
@@ -207,6 +208,7 @@ class LearningX:
                         t.join()
                     assign = threading.Thread(target=self.get_assigment_first)
                     assign.start()
+                    assign.join()
                     print("all end")
                     end = time.time()
                     print(end-now)
@@ -327,13 +329,13 @@ class LearningX:
             page.on("dialog", self.handle_dialog)
             page.wait_for_url(MAIN_URL)
         except Exception as e:
-            print(e)
             pass
         return page
 
     def handle_dialog(self,dialog):
         print(dialog.message)
         dialog.dismiss()
+        self.send_message(dialog.message)
         raise Exception
     
     def get_class(self, page: Page):
@@ -556,7 +558,7 @@ class LearningX:
         title:str = todo_class.title.strip()
         title = title.strip('\n')
         if os.path.exists(f'./{class_name}/assignment/{title}.png'):
-            print("IT HAVE!")
+            todo_class.set_image_path(f'./{class_name}/assignment/{title}.png')
             return
         else:
             try:
@@ -569,7 +571,9 @@ class LearningX:
                 assignment_box = page.locator('#assignment_show')
                 assignment = assignment_box.locator(".description")
                 assignment.screenshot(path=f'./{class_name}/assignment/{title}.png')
-                print(assignment.all_text_contents())
+                path = f'./{class_name}/assignment/{title}.png'
+                todo_class.set_image_path(path)
+                print(path)
                 return 
             except Exception as e:
                 todo_class.is_fail=True

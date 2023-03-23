@@ -50,12 +50,12 @@ class todo_class:
         self.main_class_name =main_class_name
         self.class_page= page
         self.is_fail=False
-
         if self.rest_time=='':
             self.rest_time = dt.datetime.strptime("12월 31일 오후 11:59", "%m월 %d일 오후 %H:%M")
             self.rest_time.replace(year=2024)
             self.isDone=True
-        
+        self.image_path:str =''
+    
     def __lt__(self,other):
         return other.rest_time > self.rest_time
     
@@ -69,3 +69,8 @@ class todo_class:
         print(f"rest time : {self.rest_time}")
         print(f"is Done :{self.isDone}")
         print(f"class_status : {self.class_status}")
+
+    def set_image_path(self,path):
+        self.image_path = path
+    def get_image_path(self):
+        return self.image_path
