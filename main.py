@@ -80,24 +80,24 @@ class App(customtkinter.CTk):
         a = time.time()
         print("Login pressed - username:", self.username_entry.get(), "password:", self.password_entry.get())
         self.running = learn_x2.LearningX(self.queue)
-        is_login = self.running.checking_ID_PW(self.username_entry.get(),self.password_entry.get())
-        if is_login:
-            self.login_ok()
-            self.login_frame.grid_forget()
-            self.classlist = self.running.run(False)
-            self.todo_classlist = self.running.get_todo_2_dict()
-            self.classlist = self.class_mining(self.classlist)
-            if self.after_login_window is None or not self.after_login_window.winfo_exists():
-                self.after_login_window = ssu_ui.App(self,queue=self.queue,classlist=self.classlist,todo_classlist=self.todo_classlist,learningX=self.running)
-            else:
-                self.after_login_window.focus()
-            # self.next = ssu_ui.App(self.queue,self.classlist,self.todo_classlist,self.running)
-            b = time.time()
-            print(b-a,"time")
-        else:
-            if self.queue.get():
-                print("WOW ERR!")
-        return True
+        try:
+            is_login = self.running.checking_ID_PW(self.username_entry.get(),self.password_entry.get())
+            if is_login:
+                self.login_ok()
+                self.login_frame.grid_forget()
+                self.classlist = self.running.run(False)
+                self.todo_classlist = self.running.get_todo_2_dict()
+                self.classlist = self.class_mining(self.classlist)
+                if self.after_login_window is None or not self.after_login_window.winfo_exists():
+                    self.after_login_window = ssu_ui.App(self,queue=self.queue,classlist=self.classlist,todo_classlist=self.todo_classlist,learningX=self.running)
+                else:
+                    self.after_login_window.focus()
+                
+                b = time.time()
+                print(b-a,"time")
+        except Exception as e:
+            print(e)
+            self.open_login_error()
     
     def open_login_error(self):
         if self.toplevel_window is None or not self.toplevel_window.winfo_exists():

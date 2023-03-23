@@ -89,8 +89,8 @@ class App(customtkinter.CTkToplevel):
             self.scrollable_frame_switches.append(switch)
         
         # create tabview
-        self.tabview = customtkinter.CTkTabview(self, width=250)
-        self.tabview.grid(row=0, column=2, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.tabview = customtkinter.CTkTabview(self, width=300)
+        self.tabview.grid(row=0, column=2, padx=(20, 0), pady=(20, 0), sticky="nsew",rowspan=2)
         self.tabview.add("Assigment")
         self.tabview.add("notice")
         self.tabview.tab("Assigment").grid_columnconfigure(0, weight=1)  # configure grid of individual tabs
@@ -124,11 +124,11 @@ class App(customtkinter.CTkToplevel):
         self.scaling_optionemenu.set("100%")
         self.optionmenu_1.set("CTkOptionmenu")
         
-        self.image= customtkinter.CTkImage(Image.open(os.path.join(self.image_path,"bg_gradient.jpg")),size=(30,30))
+        self.image= customtkinter.CTkImage(Image.open(os.path.join(self.image_path,"bg_gradient.jpg")),size=(500,400))
         print("image load ok")
 
         self.image_frame = customtkinter.CTkLabel(self.tabview.tab('Assigment'),image=self.image)
-        self.image_frame.grid(column=2,row=1,rowspan=2,columnspan=2,sticky='nsew')
+        self.image_frame.grid(column=0,row=1,rowspan=2,columnspan=2,sticky='nsew')
         
     def switch_toggle(self,switch:customtkinter.CTkSwitch):
         if switch.get()==0:
@@ -201,7 +201,7 @@ class App(customtkinter.CTkToplevel):
             if choice in todo_class_per.title:
                 path = todo_class_per.get_image_path()
                 break
-        self.image =customtkinter.CTkImage(Image.open(path),size=(30,30))
+        self.image =customtkinter.CTkImage(Image.open(path),size=(500,400))
         self.image_frame.configure(image=self.image)
         
     def sidebar_button_event(self,i):
