@@ -84,6 +84,7 @@ class LearningX:
         self.login = None
         self.context1=None
         self.context2=None
+        self.dead_thread=[]
 
     #? Queue 통신
     def send_message(self,message):
@@ -127,17 +128,20 @@ class LearningX:
                         self.assignment_page(check,assign)
             
     def per_process_do_first(self,p_cls):
-        print("start ThreadProcess")
-        with sync_playwright() as p:
-            for browser_type in [p.chromium]:
-                p.selectors.register("tag",TAG_SELECTOR)
-                desktop = p.devices["Desktop Chrome"]
-                browser = p.chromium.launch(channel='chrome')
-                context1 = browser.new_context(**desktop)
-                page = browser.new_page()
-                check = self.searchID_PW(page, self.id, self.pw)
-                self.get_todo(check,self.classlist[p_cls])
-                
+        try:
+            with sync_playwright() as p:
+                for browser_type in [p.chromium]:
+                    p.selectors.register("tag",TAG_SELECTOR)
+                    desktop = p.devices["Desktop Chrome"]
+                    browser = p.chromium.launch(channel='chrome')
+                    context1 = browser.new_context(**desktop)
+                    page = browser.new_page()
+                    check = self.searchID_PW(page, self.id, self.pw)
+                    self.get_todo(check,self.classlist[p_cls])
+        except:
+            self.dead_thread.append(p_cls)
+            print(f"Thread Error {p_cls}")
+    
     def custom_error_callback(self,error):
         print(f'Got an Error: {error}', flush=True)
     #? pdf,file,assignment
@@ -192,20 +196,30 @@ class LearningX:
                     main_class_name_list = self.classlist.keys()
                     process_list = []
                     for i,class_name in enumerate(main_class_name_list):
-                        process_list.append(threading.Thread(target=self.per_process_do_first,args=(class_name,)))
+                        process_list.append([threading.Thread(target=self.per_process_do_first,args=(class_name,)),class_name])
+                    
                     now = time.time()
                     for start in process_list:
                         try:
-                            start:threading.Thread
-                            start.start()
+                            start_t:threading.Thread = start[0]
+                            start_t.start()
                             time.sleep(1) 
                         except:
                             time.sleep(1)
-                            start.start()
+                            start_t.start()
                             pass
+                    
                     for t in process_list:
-                        t:threading.Thread
-                        t.join()
+                        t[0].join()
+                    retry_thread=[]
+                    for thread in self.dead_thread:
+                        new_thread= threading.Thread(target=self.per_process_do_first,args=(thread,))
+                        retry_thread.append(new_thread)
+                    for j in retry_thread:
+                        j.start()
+                    for j in retry_thread:
+                        j.join()
+                    
                     assign = threading.Thread(target=self.get_assigment_first)
                     assign.start()
                     assign.join()

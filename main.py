@@ -90,9 +90,9 @@ class App(customtkinter.CTk):
                 self.classlist = self.class_mining(self.classlist)
                 if self.after_login_window is None or not self.after_login_window.winfo_exists():
                     self.after_login_window = ssu_ui.App(self,queue=self.queue,classlist=self.classlist,todo_classlist=self.todo_classlist,learningX=self.running)
+                    self.withdraw()
                 else:
                     self.after_login_window.focus()
-                
                 b = time.time()
                 print(b-a,"time")
         except Exception as e:

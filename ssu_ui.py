@@ -122,7 +122,7 @@ class App(customtkinter.CTkToplevel):
         
         self.appearance_mode_optionemenu.set("Dark")
         self.scaling_optionemenu.set("100%")
-        self.optionmenu_1.set("CTkOptionmenu")
+        self.optionmenu_1.set("과제 확인란")
         
         self.image= customtkinter.CTkImage(Image.open(os.path.join(self.image_path,"bg_gradient.jpg")),size=(500,400))
         print("image load ok")
