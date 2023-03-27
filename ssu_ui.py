@@ -31,7 +31,7 @@ class App(customtkinter.CTkToplevel):
         self.title("SSU AUTO MATION BY .KIRU")
         self.image_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "test_images")
         self.geometry(f"{1300}x{700}")
-        
+        self.receive_server_alive = 0
         # configure grid layout (4x4)
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure((2, 3), weight=1)
@@ -152,9 +152,13 @@ class App(customtkinter.CTkToplevel):
             self.toplevel_window.focus()  # if window exists focus it
     
     def receive_msg(self):
+        if self.receive_server_alive==1:
+            return
         print("=======recevie server start=======")
         if self.queue.empty():
             message = "AUTO STARTING..."
+        else:
+            self.receive_server_alive=1
         while 1:
             time.sleep(0.15)
             if self.queue.qsize() > 0: 
@@ -171,6 +175,7 @@ class App(customtkinter.CTkToplevel):
                     self.slider_class.configure(text=title)
                 else:
                     self.text_log_input(message)
+        self.receive_server_alive =0
         return
 
     def change_scaling_event(self, new_scaling: str):

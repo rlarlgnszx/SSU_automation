@@ -112,7 +112,7 @@ class App(customtkinter.CTk):
             fi+=")"
             classes[fi]=data[da]
         return classes
-    
+
     def run(self):
         self.mainloop()
     

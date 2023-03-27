@@ -148,18 +148,27 @@ class LearningX:
     def donwload(self,page):
         for per_class in self.classlist:
             main_class = self.classlist[per_class]
-            print(per_class)
-            # print("PDF FIND >>>>")
+            print("MAINCLAS NAME : " ,per_class)
+            have_pdf= os.scandir(f'./{main_class.title}/pdf/')
+            have_pdf =set(x.name for x in have_pdf)
             pdfs = main_class.get_pdf()
-            files = main_class.get_file()
             for pdf in pdfs:
+                if pdf.title in have_pdf or self.clean_text(pdf.title) in have_pdf or pdf.title+".pdf" in have_pdf or self.clean_text(pdf.title+".pdf") in have_pdf:
+                    print(pdf.title,'존재')
+                    continue
                 is_end  = self.pdf_page(page,pdf)
                 if is_end==-1:
                     print(f"RETRY {pdf.title}")
                     is_end=self.pdf_page(page,pdf)
                 else:
                     continue
+            have_files = os.scandir(f'./{main_class.title}/files/')
+            have_files = set(x.name for x  in have_files)
+            files = main_class.get_file()
             for file in files:
+                if file.title in have_files or self.clean_text(file.title) in have_files or file.title+".pdf" in have_files or self.clean_text(file.title+".zip") in have_pdf:
+                    print(file.title,'존재')
+                    continue
                 is_end = self.file_page(page,file)
                 if is_end==-1:
                     print(f"RETRY {file.title}")
@@ -232,31 +241,9 @@ class LearningX:
                     return self.show_class_dict()
                 else:
                     self.donwload(page)
-                # main_key = list(self.classlist.keys())
-                # self.send_message(f"수업 개수 :  {len(main_key)}")
-                # for per_class in self.classlist:
-                #     main_class = self.classlist[per_class]
-                #     print(per_class)
-                #     print("PDF FIND >>>>")
-                #     pdfs = main_class.get_pdf()
-                #     files = main_class.get_file()
-                #     for pdf in pdfs:
-                #         is_end  = self.pdf_page(page,pdf)
-                #         if is_end==-1:
-                #             print(f"RETRY {pdf.title}")
-                #             is_end=self.pdf_page(page,pdf)
-                #         else:
-                #             continue
-                #     for file in files:
-                #         is_end = self.file_page(page,file)
-                #         if is_end==-1:
-                #             print("RETRY {file.title}")
-                #             is_end=self.file_page(page,file)
-                #         else:
-                #             continue
-                # self.send_message("end get class")
                 browser.close()
         return 
+
     # ============================동영상 강의 STREAM =================================
     def stream(self):
         tag_selector =TAG_SELECTOR
@@ -474,25 +461,20 @@ class LearningX:
     def pdf_page(self,page:Page, todo_class:todo_class):
         class_url=todo_class.url
         class_name=todo_class.main_class_name
-        # print(class_name)
         pdf_title = self.clean_text(todo_class.title)
         if os.path.exists(f'./{class_name}/pdf/{pdf_title}.pdf'):
             return 1
         try:
-            # class_title.click()
             page.goto(class_url)
             page.wait_for_load_state('networkidle')
             page.wait_for_selector(
                 PDF_PAGE_SELECTOR)
-            # print("PDF_PAGE_SELECTOR")
             pdf_title = "None"
             pdf_url = ""
             firstframe = page.frame_locator(
                 PDF_1_XPATH)
-            # print("PDF_1_XPATH OK")
             secondframe = firstframe.frame_locator(
                 PDF_2_XPATH)
-            # print("PDF_2_XPATH OK ")
             pdf_url = secondframe.locator(
                 PDF_URL_LOCATOR).get_attribute('content')
             pdf_title = secondframe.locator(
@@ -501,7 +483,6 @@ class LearningX:
             self.send_message("pdf_donload")
             r = requests.get(str(pdf_url), stream=True)
             pdf_title = self.clean_text(pdf_title)
-            # print(pdf_title)
             if not os.path.exists(f'./{class_name}/pdf/{pdf_title}.pdf'):
                 self.send_message(f'start download {pdf_title}')
                 with open(f'./{class_name}/pdf/{pdf_title}.pdf', 'wb') as fd:
