@@ -1,26 +1,72 @@
 # SSU_automation
 <h1>SSU AUTOMATION APPLICATION</h1>
-<h3>using : Playwright</h3>
-<h3>using : chromnium</h3>
+<h1 align="center">
+  <br>
+  <a href="http://www.amitmerchant.com/electron-markdownify"><img src="https://user-images.githubusercontent.com/40743105/229996166-6b76d8f1-40e6-4428-9efe-aa641d3073f3.png" alt="SSU_AUTOMATION" width="200"></a>
+  <br>
+  LMS HELPER
+  <br>
+</h1>
 
-<h1>Login</h1>
-<image src=https://user-images.githubusercontent.com/40743105/225222917-274d839c-bb57-4685-9e4b-b1bd12a1b4bb.png >
-<h3>LMS 개편후 login후 가져오는 데이터 속도가 느려짐..주의..</h3>
-<h1>Login 후</h1>
-<image src=https://user-images.githubusercontent.com/40743105/225223324-317df9bf-5fb7-4130-8e80-d7ee5680a541.png>
+<h4 align="center">Playwright & CustomTkinter</h4>
 
-<h2>STREAM</h2>
-<image src=https://user-images.githubusercontent.com/40743105/225223623-af9fcc29-de53-4e4c-920f-a8a4799180ba.png>
 
-<h2>DOWNLOAD</h2>
-FILE PATH 경로
-강의 이름:
-    ->files
-    ->pdfs
-    ->assignments
-<h1>Python Version >= 3.10 <h1>
+<p align="center">
+  <a href="#key-features">Key Features</a> •
+  <a href="#how-to-use">How To Use</a> •
+  <a href="#credits">Credits</a> •
+</p>
+
+
+
+
+https://user-images.githubusercontent.com/40743105/229999850-6e79be4c-0dca-44c8-9cac-257ef24cb592.mp4
+
+
+
+
+
+## Key Features
+Stream 
+<div>
+동영상 할일 자동재생 시작 # 남을 할일 시간순으로 재생
+</div>
+
+Download 
+<div>
+pdf, zip file 등 files 폴더에 저장
+</div>
+
+Assigment show 
+<div>
+과제 부분 screenshot해서 저장하고 수업 클릭후 assgiment option에서 선택 가능
+</div>
+
+## How To Use
+installed on your computer. From your command line:
+
+```bash
+# Clone this repository
+$ git clone https://github.com/rlarlgnszx/SSU_automation
+
+# Go into the repository
+$ cd SSU_automation
+
+# Install dependencies #require python >=version 3.8
+$ pip install -r requirement.txt
+$ playwright install chromium
+
+# Run the app
+$ python main.py
 ```
-    pip install pytest-playwright
-    playwright install chromium
-    pip install -r requirements.txt
-```
+
+> **Note**
+> Linux는 UI가 좀 별로입니다. window 나 ios 쓰시는게 좋을거 같아요
+
+## Credits
+
+This software uses the following open source packages:
+
+ - [Playwright] https://github.com/microsoft/playwright-python
+ - [CustomTkinter] https://github.com/TomSchimansky/CustomTkinter
+
