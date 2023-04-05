@@ -162,7 +162,7 @@ class LearningX:
                     is_end=self.pdf_page(page,pdf)
                 else:
                     continue
-            with open(f'./{main_class.title}/pdf/pdf.txt') as f:  
+            with open(f'./{main_class.title}/pdf/pdf.txt','w') as f:  
                 for pdf in pdfs:
                     f.write(pdf.title+'\n')
             have_files = os.scandir(f'./{main_class.title}/files/')
@@ -178,7 +178,7 @@ class LearningX:
                     is_end=self.file_page(page,file)
                 else:
                     continue
-            with open(f'./{main_class.title}/files/file.txt') as f:  
+            with open(f'./{main_class.title}/files/file.txt','w') as f:  
                 for file in files:
                     f.write(file.title+'\n')
         self.send_message("end get class")
