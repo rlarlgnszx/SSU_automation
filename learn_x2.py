@@ -162,6 +162,9 @@ class LearningX:
                     is_end=self.pdf_page(page,pdf)
                 else:
                     continue
+            with open(f'./{main_class.title}/pdf/pdf.txt') as f:  
+                for pdf in pdfs:
+                    f.write(pdf.title+'\n')
             have_files = os.scandir(f'./{main_class.title}/files/')
             have_files = set(x.name for x  in have_files)
             files = main_class.get_file()
@@ -175,6 +178,9 @@ class LearningX:
                     is_end=self.file_page(page,file)
                 else:
                     continue
+            with open(f'./{main_class.title}/files/file.txt') as f:  
+                for file in files:
+                    f.write(file.title+'\n')
         self.send_message("end get class")
     
     def run(self,is_run=True):
@@ -418,10 +424,10 @@ class LearningX:
     
     def make_dir(self):
         for i in self.classlist:
-            os.makedirs(f'./{i}', exist_ok=True)
-            os.makedirs(f"./{i}/files", exist_ok=True)
-            os.makedirs(f"./{i}/pdf", exist_ok=True)
-            os.makedirs(f"./{i}/assignment", exist_ok=True)
+            os.makedirs(f"./{i}", exist_ok=True)
+            os.makedirs(f"./{i}/files/", exist_ok=True)
+            os.makedirs(f"./{i}/pdf/", exist_ok=True)
+            os.makedirs(f"./{i}/assignment/", exist_ok=True)
             self.send_message(f"{i} Checked\n.")
 
     def dump_frame_tree(self, frame, indent, stack=[]):
@@ -485,7 +491,7 @@ class LearningX:
             pdf_title = self.clean_text(pdf_title)
             if not os.path.exists(f'./{class_name}/pdf/{pdf_title}.pdf'):
                 self.send_message(f'start download {pdf_title}')
-                with open(f'./{class_name}/pdf/{pdf_title}.pdf', 'wb') as fd:
+                with open(os.path.join(f'./{class_name}/pdf',f'{pdf_title}.pdf'), 'wb') as fd:
                     for chunk in r.iter_content(chunk_size=2000):
                         fd.write(chunk)
                     self.send_message('download FINISHED')
@@ -529,7 +535,7 @@ class LearningX:
                 with page.expect_download() as download_info:
                     file.locator(FILE_DOWNLOAD_LOCATOR).click()
                 download = download_info.value
-                download.save_as(os.path.join(f'./{class_name}/files/{filename}'))
+                download.save_as(os.path.join(f'./{class_name}/files',f'{filename}'))
                 self.send_message('File download FINISHED')
             else:
                 if fileexpand=='zip' and not os.path.exists(f'./{class_name}/files/{str(filename)[:-4]}'):
@@ -565,7 +571,7 @@ class LearningX:
                 title = page.locator('h1.title').text_content().strip().strip('\n')
                 assignment_box = page.locator('#assignment_show')
                 assignment = assignment_box.locator(".description")
-                assignment.screenshot(path=f'./{class_name}/assignment/{title}.png')
+                assignment.screenshot(path=os.path.join(f'./{class_name}/assignment',f'{title}.png'))
                 path = f'./{class_name}/assignment/{title}.png'
                 todo_class.set_image_path(path)
                 # print(path)
