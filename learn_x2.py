@@ -162,9 +162,10 @@ class LearningX:
                     is_end=self.pdf_page(page,pdf)
                 else:
                     continue
-            with open(f'./{main_class.title}/pdf/pdf.txt','w') as f:  
-                for pdf in pdfs:
-                    f.write(pdf.title+'\n')
+            with open(f'./{main_class.title}/pdf/pdf.txt','w') as f1:  
+                for pdf in main_class.get_pdf():
+                    f1.write(pdf.title+'\n')
+            f1.close()
             have_files = os.scandir(f'./{main_class.title}/files/')
             have_files = set(x.name for x  in have_files)
             files = main_class.get_file()
@@ -178,9 +179,10 @@ class LearningX:
                     is_end=self.file_page(page,file)
                 else:
                     continue
-            with open(f'./{main_class.title}/files/file.txt','w') as f:  
-                for file in files:
-                    f.write(file.title+'\n')
+            with open(f'./{main_class.title}/files/file.txt','w') as f2:  
+                for file in main_class.get_file():
+                    f2.write(file.title+'\n')
+            f2.close()
         self.send_message("end get class")
     
     def run(self,is_run=True):
@@ -597,6 +599,7 @@ class LearningX:
                 return
         except Exception as e:
             print(e)
+            pass
     
     def synch_todo_url(self,page:Page,class_url,class_name):
         try:
