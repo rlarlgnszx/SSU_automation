@@ -37,7 +37,7 @@ class App(customtkinter.CTkToplevel):
         self.grid_columnconfigure((2, 3), weight=1)
         self.grid_rowconfigure((2, 1, 1), weight=1)
         self.index=0
-        
+        self.assigment:main_class
         # create sidebar frame with widgets
         self.sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
         self.sidebar_frame.grid(row=0, column=0,rowspan=6, sticky="nsew")

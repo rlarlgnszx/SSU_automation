@@ -109,10 +109,10 @@ class SSU:
                 # print(page.url)
                 speed = page.locator('xpath=/html/body/div[1]/div[1]/div/div[9]/div/div/div[2]/div[13]/div[5]')
                 speed.dispatch_event('click')
+                send_message(f"current_speed : {speed.get_attribute('id')}")
                 while current_progress <= 90:
                     before_progress=current_progress
                     send_message(f"PROGRESS:{current_progress}")
-                    send_message(f"current_speed : {speed.get_attribute('id')}")
                     time.sleep(1)
                     end_load= page.locator(".vc-pctrl-play-progress")
                     a = end_load.get_attribute('style')

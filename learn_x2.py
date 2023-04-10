@@ -126,19 +126,21 @@ class LearningX:
                     assigments = mainC.get_assignment()
                     for assign in assigments:
                         self.assignment_page(check,assign)
-            
+    
     def per_process_do_first(self,p_cls):
         try:
             with sync_playwright() as p:
                 for browser_type in [p.chromium]:
                     p.selectors.register("tag",TAG_SELECTOR)
                     desktop = p.devices["Desktop Chrome"]
-                    browser = p.chromium.launch(channel='chrome')
+                    browser = p.chromium.launch(channel='msedge')
+                    # browser = p.chromium.launch(channel='chrome',headless=False)
                     context1 = browser.new_context(**desktop)
                     page = browser.new_page()
                     check = self.searchID_PW(page, self.id, self.pw)
                     self.get_todo(check,self.classlist[p_cls])
-        except:
+        except Exception as e:
+            print(e)
             self.dead_thread.append(p_cls)
             print(f"Thread Error {p_cls}")
     
@@ -221,7 +223,8 @@ class LearningX:
                             start_t:threading.Thread = start[0]
                             start_t.start()
                             time.sleep(1) 
-                        except:
+                        except Exception as e:
+                            print(e)
                             time.sleep(1)
                             start_t.start()
                             pass
@@ -338,11 +341,13 @@ class LearningX:
             page.on("dialog", self.handle_dialog)
             page.wait_for_url(MAIN_URL)
         except Exception as e:
+            print(e)
             pass
         return page
 
     def handle_dialog(self,dialog):
-        print(dialog.message)
+        if "세션에 문제" in dialog.message:
+            return 
         dialog.dismiss()
         self.send_message(dialog.message)
         raise Exception
@@ -380,11 +385,17 @@ class LearningX:
         print(f"{class_name} Thread Start")
         page.goto(class_url+PER_CLASS_URL_EXTERNAL_TOOLS)
         page.wait_for_load_state('domcontentloaded')
-        self.expand_c_list(page)
-        # print("class MAIN NAME : ",class_name)
-        per_class_all = page.frame_locator(PER_CLASS_ALL_PAGE)
+        # page.on("frameattached",lambda x:x print("start"))
+        print(class_name+ "OK")
+        # page.wait_for_selector(PER_CLASS_ALL_PAGE,timeout=5.0)
+        page.wait_for_load_state('networkidle')
+        page.wait_for_selector('xpath=/html/body/div[2]/div[2]/div[2]/div[3]/div[1]/div/div[1]/iframe')
+        per_class_all = page.frame_locator('xpath=/html/body/div[2]/div[2]/div[2]/div[3]/div[1]/div/div[1]/iframe')
+        # self.expand_c_list(page)
+        print(f'{class_name} FRAME FOUND')
         per_class_all = per_class_all.locator(PER_CLASS_ALL_PAGE_LOCATOR)
         count = per_class_all.count()
+        print(f'{class_name} 개수 : {count}')
         for i in range(count):#수업안에 소클래스
             get_class = per_class_all.nth(i)
             class_status = get_class.locator(PER_CLASS_STATUS_LOCATOR)
@@ -392,36 +403,63 @@ class LearningX:
             class_per_url = get_class.locator(PER_CLASS_URL_LOCATOR).get_attribute('href')
             class_rest =''
             class_status = class_status.get_attribute('class')
-            if "시작" in get_class.locator(PER_CLASS_DATE_CHECK).text_content() or "마감" in get_class.locator(PER_CLASS_DATE_CHECK).text_content():
-                class_rest = get_class.locator(PER_CLASS_DATE_LOCATOR)
-                if get_class.locator(PER_CLASS_DATE_CHECK).text_content().startswith("시작"):
-                    class_rest = class_rest.locator('span').text_content()    
-                    class_rest = self.time_mining(class_rest)
-                    unlock= get_class.locator(PER_CLASS_DATE_START_LOCATOR).locator('span').text_content()
-                    unlock = self.time_mining(unlock)
-                    if now<unlock:
-                        continue
+            
+            try:
+                if "assignment" in class_status:
+                    check_rest = get_class.locator('.xnmb-module_item-meta_data-lecture_periods')
+                    start = check_rest.locator('.xnmb-module_item-meta_data-lecture_periods-unlock_at')
+                    done = check_rest.locator('.xnmb-module_item-meta_data-lecture_periods-due_at')
+                    print(done.text_content())
+                    if "마감" in done.text_content():
+                        class_rest = done
+                        if start.count() >=1 and start.text_content().startswith('시작'):
+                            class_rest = class_rest.locator('span').text_content()    
+                            class_rest = self.time_mining(class_rest)
+                            unlock= start.locator('span').text_content()
+                            unlock = self.time_mining(unlock)
+                            if now<unlock:
+                                continue
+                        else:
+                            class_rest = class_rest.locator('span').text_content()    
+                            class_rest = self.time_mining(class_rest)
+                elif 'everlec' in class_status:
+                    check_rest = get_class.locator('.xnlal-attendance-list-item-meta_data-lecture_periods')
+                    start = check_rest.locator('.xnlal-attendance-list-item-meta_data-lecture_periods-unlock_at')
+                    done = check_rest.locator('.xnlal-attendance-list-item-meta_data-lecture_periods-due_at')
+                    print(done.text_content())
+                    if "마감" in done.text_content():
+                        class_rest = done
+                        if start.count() >=1 and start.text_content().startswith('시작'):
+                            class_rest = class_rest.locator('span').text_content()    
+                            class_rest = self.time_mining(class_rest)
+                            unlock= start.locator('span').text_content()
+                            unlock = self.time_mining(unlock)
+                            if now<unlock:
+                                continue
+                        else:
+                            class_rest = class_rest.locator('span').text_content()    
+                            class_rest = self.time_mining(class_rest)
                 else:
-                    class_rest = class_rest.locator('span').text_content()    
-                    class_rest = self.time_mining(class_rest)
+                    class_rest=""
+            except Exception as e:
+                print(e)
+                pass
             main_class.add_property(class_title.text_content(),PER_URL+class_per_url,class_status,class_rest)
-            # print(class_title.text_content(),PER_URL+class_per_url,class_status,class_rest)
+            print(class_title.text_content(),class_status, ":",class_rest)
         main_class=self.check_todo_done(main_class,page)
         for video in main_class.get_video():
-            # print(video.show())
             self.ssu.add_todo_class(video)
         print(f"{class_name} Thread 종료")
-    
     #class / pdf,assignment,files
     def time_mining(self,time):
         if '오후' in time:
             time = datetime.strptime(time, "%m월 %d일 오후 %H:%M")
             time = time.replace(year=2023,hour=time.hour+12)
-            
         elif '오전' in time:
             time = datetime.strptime(time, "%m월 %d일 오전 %H:%M")
             time= time.replace(year=2023)
-        
+        else:
+            time = datetime.strptime(time,"%m월 %d일 %H:%M")
         return time
     
     def make_dir(self):
@@ -592,9 +630,9 @@ class LearningX:
         page.wait_for_load_state('networkidle')
         frame = page.frame_locator(EXPAND_LOCATOR)
         try:
-            check = frame.get_by_text(EXPAND_TEXT).text_content()
+            check = frame.locator('.xn-common-white-btn .xnmb-all_fold-btn').text_content()
             if EXPAND_FALSE in str(check):
-                frame.get_by_text(EXPAND_FALSE).click()
+                check.click()
             else:
                 return
         except Exception as e:
@@ -612,6 +650,7 @@ class LearningX:
             print("class MAIN NAME : ",class_name)
             per_class_all = page.frame_locator(PER_CLASS_ALL_PAGE)
             per_class_all = per_class_all.locator(PER_CLASS_ALL_PAGE_LOCATOR)#queryselect all
+            
             count = per_class_all.count()
             print("수업 개수 : ",count)
             # class_main:main_class = self.classlist[class_name]

@@ -31,7 +31,7 @@ class Local:
         self.FILE_LOCATOR = "xpath=/html/body/div/div/div[2]/div[2]"
         self.FILE_NAME_LOCATOR = '.xnbc-file-name'
         self.FILE_DOWNLOAD_LOCATOR = '.xnbc-file-download-icon'
-        self.EXPAND_LOCATOR = 'iframe#tool_content'
+        self.EXPAND_LOCATOR = '#tool_content'
         self.EXPAND_TEXT = '모두'
         self.EXPAND_FALSE = '모두 펼치기'
         self.PER_CLASS_URL_EXTERNAL_TOOLS = '/external_tools/71'
